@@ -13,42 +13,44 @@
   align-items: center;
   justify-content: space-between;
   cursor: grab;
+  -webkit-app-region: drag;
+  user-select: none;
 }
 .header:active { cursor: grabbing; }
 
-.logo {
-  font-size: 13px;
-  font-weight: bold;
-  color: #f0c040;
-}
-
-.header-right {
+.header-left {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.pin-btn {
-  font-size: 9px;
-  font-weight: bold;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #555;
-  padding: 0;
-  font-family: 'Monaco', monospace;
+.traffic-lights {
+  display: flex;
+  gap: 6px;
+  -webkit-app-region: no-drag;
 }
-.pin-btn.pinned { color: #f0c040; }
 
-.close-btn {
-  font-size: 10px;
-  background: none;
+.traffic-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
   border: none;
-  color: #555;
   cursor: pointer;
-  font-family: 'Monaco', monospace;
+  transition: opacity 0.2s;
+  padding: 0;
 }
-.close-btn:hover { color: #ff4444; }
+.traffic-light:hover { opacity: 0.8; }
+.traffic-light.red { background: #ff5f56; }
+.traffic-light.yellow { background: #ffbd2e; }
+.traffic-light.green { background: #27c93f; }
+.traffic-light.green.active { box-shadow: 0 0 4px #27c93f; }
+
+.logo {
+  font-size: 13px;
+  font-weight: bold;
+  color: #f0c040;
+  -webkit-app-region: no-drag;
+}
 
 /* 구분선 */
 .divider { height: 1px; background: #2a2a2a; margin: 2px 0; }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import SetupModal from './SetupModal'
 import useChatGPT from './hooks/useChatGPT'
@@ -30,31 +30,9 @@ export default function App() {
   // Gemini 사용량 훅
   const geminiUsage = useGemini()
 
-  // 드래그
-  const dragRef = useRef({ dragging: false, startX: 0, startY: 0 })
-
   const handleCloseSetup = () => {
     window.tmAPI?.setupClose()
     setShowSetup(false)
-  }
-
-  const onMouseDown = (e) => {
-    dragRef.current = { dragging: true, startX: e.screenX, startY: e.screenY }
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
-  }
-  const onMouseMove = (e) => {
-    if (!dragRef.current.dragging) return
-    const dx = e.screenX - dragRef.current.startX
-    const dy = e.screenY - dragRef.current.startY
-    dragRef.current.startX = e.screenX
-    dragRef.current.startY = e.screenY
-    window.tmAPI?.winMove(dx, dy)
-  }
-  const onMouseUp = () => {
-    dragRef.current.dragging = false
-    window.removeEventListener('mousemove', onMouseMove)
-    window.removeEventListener('mouseup', onMouseUp)
   }
 
   // 핀 토글
@@ -101,17 +79,26 @@ export default function App() {
       
       <div className="widget">
         {/* 헤더 */}
-        <div className="header" onMouseDown={onMouseDown}>
-          <span className="logo">TM</span>
-          <div className="header-right">
-            <button
-              className={`pin-btn ${pinned ? 'pinned' : ''}`}
-              onClick={togglePin}
-              title={pinned ? '고정 해제' : '맨 위 고정'}
-            >
-              {pinned ? '📌ON' : '📍OFF'}
-            </button>
-            <button className="close-btn" onClick={() => window.tmAPI?.winHide()}>✕</button>
+        <div className="header">
+          <div className="header-left">
+            <div className="traffic-lights">
+              <button
+                className="traffic-light red"
+                onClick={() => window.tmAPI?.winHide()}
+                title="창 숨기기"
+              />
+              <button
+                className="traffic-light yellow"
+                onClick={() => window.tmAPI?.winHide()}
+                title="최소화"
+              />
+              <button
+                className={`traffic-light green ${pinned ? 'active' : ''}`}
+                onClick={togglePin}
+                title={pinned ? '항상 위 고정 해제' : '항상 위 고정'}
+              />
+            </div>
+            <span className="logo">TM</span>
           </div>
         </div>
 

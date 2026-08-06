@@ -68,7 +68,9 @@ function createWindow() {
     frame: false,
     transparent: false,
     alwaysOnTop: true,
-    resizable: false,
+    resizable: true,
+    minWidth: 240,
+    minHeight: 130,
     skipTaskbar: true,
     icon: iconPath,
     webPreferences: {
