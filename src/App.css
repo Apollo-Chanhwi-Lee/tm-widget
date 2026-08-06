@@ -38,12 +38,36 @@
   cursor: pointer;
   transition: opacity 0.2s;
   padding: 0;
+  position: relative;
 }
 .traffic-light:hover { opacity: 0.8; }
 .traffic-light.red { background: #ff5f56; }
 .traffic-light.yellow { background: #ffbd2e; }
 .traffic-light.green { background: #27c93f; }
-.traffic-light.green.active { box-shadow: 0 0 4px #27c93f; }
+
+/* 초록 버튼 - 핀 ON/OFF */
+.traffic-light.green.inactive::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 189, 46, 0.7);
+  border-radius: 50%;
+  z-index: 1;
+}
+.traffic-light.green.inactive::after {
+  content: '⊘';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+  z-index: 2;
+}
 
 .logo {
   font-size: 13px;

@@ -93,9 +93,9 @@ export default function App() {
                 title="최소화"
               />
               <button
-                className={`traffic-light green ${pinned ? 'active' : ''}`}
+                className={`traffic-light green ${pinned ? '' : 'inactive'}`}
                 onClick={togglePin}
-                title={pinned ? '항상 위 고정 해제' : '항상 위 고정'}
+                title={pinned ? '맨 위 고정 ON' : '맨 위 고정 OFF'}
               />
             </div>
             <span className="logo">TM</span>
