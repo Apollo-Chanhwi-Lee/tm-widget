@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import SetupModal from './SetupModal'
 import useChatGPT from './hooks/useChatGPT'
+import useGemini from './hooks/useGemini'
 
 const TABS = [
   { key: 'claude',  label: 'Claude',  color: '#f0c040' },
@@ -25,6 +26,9 @@ export default function App() {
 
   // ChatGPT 사용량 훅
   const chatgptUsage = useChatGPT()
+
+  // Gemini 사용량 훅
+  const geminiUsage = useGemini()
 
   // 드래그
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0 })
@@ -170,7 +174,20 @@ export default function App() {
           {tab === 'chatgpt' && chatgptUsage.error && (
             <div className="usage-empty" style={{ color: '#10a37f' }}>API 키 설정 필요</div>
           )}
-          {tab === 'gemini' && (
+          {tab === 'gemini' && !geminiUsage.loading && !geminiUsage.error && (
+            <div style={{ fontSize: '9px', color: '#4285f4', lineHeight: '1.5' }}>
+              <div>● 오늘 {fmt(geminiUsage.today.tokens)} · {geminiUsage.today.requests}회</div>
+              <div>● 주간 {fmt(geminiUsage.week.tokens)} · {geminiUsage.week.requests}회</div>
+              <div>● 월간 {fmt(geminiUsage.month.tokens)} · {geminiUsage.month.requests}회</div>
+              <div style={{ color: '#888', marginTop: '2px' }}>
+                할당량 {geminiUsage.quota.remaining.toLocaleString()}/{geminiUsage.quota.limit.toLocaleString()}
+              </div>
+            </div>
+          )}
+          {tab === 'gemini' && geminiUsage.loading && (
+            <div className="usage-empty" style={{ color: '#4285f4' }}>로딩 중...</div>
+          )}
+          {tab === 'gemini' && geminiUsage.error && (
             <div className="usage-empty" style={{ color: '#4285f4' }}>API 키 설정 필요</div>
           )}
         </div>
