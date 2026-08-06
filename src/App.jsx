@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import SetupModal from './SetupModal'
+import useChatGPT from './hooks/useChatGPT'
 
 const TABS = [
   { key: 'claude',  label: 'Claude',  color: '#f0c040' },
@@ -21,6 +22,9 @@ export default function App() {
   const [planUsage, setPlanUsage] = useState(null) // { fh, sd, ts }
   const [time, setTime] = useState(new Date())
   const [showSetup, setShowSetup] = useState(false)
+
+  // ChatGPT 사용량 훅
+  const chatgptUsage = useChatGPT()
 
   // 드래그
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0 })
@@ -153,7 +157,17 @@ export default function App() {
           {tab === 'claude' && !planUsage && (
             <div className="usage-empty">Claude 앱 필요</div>
           )}
-          {tab === 'chatgpt' && (
+          {tab === 'chatgpt' && !chatgptUsage.loading && !chatgptUsage.error && (
+            <div style={{ fontSize: '9px', color: '#10a37f', lineHeight: '1.5' }}>
+              <div>● 오늘 {fmt(chatgptUsage.today.tokens)} · ${chatgptUsage.today.cost.toFixed(2)}</div>
+              <div>● 주간 {fmt(chatgptUsage.week.tokens)} · ${chatgptUsage.week.cost.toFixed(2)}</div>
+              <div>● 월간 {fmt(chatgptUsage.month.tokens)} · ${chatgptUsage.month.cost.toFixed(2)}</div>
+            </div>
+          )}
+          {tab === 'chatgpt' && chatgptUsage.loading && (
+            <div className="usage-empty" style={{ color: '#10a37f' }}>로딩 중...</div>
+          )}
+          {tab === 'chatgpt' && chatgptUsage.error && (
             <div className="usage-empty" style={{ color: '#10a37f' }}>API 키 설정 필요</div>
           )}
           {tab === 'gemini' && (
