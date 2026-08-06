@@ -1,0 +1,16 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0d0d0d;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  overflow: hidden;
+  user-select: none;
+  border: 1px solid #f0c040;
+  border-radius: 6px;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
