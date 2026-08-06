@@ -38,7 +38,7 @@
       "assets/**/*"
     ],
     "mac": {
-      "icon": "assets/tm_icon.png",
+      "icon": "assets/TM.icns",
       "target": [
         {
           "target": "dmg",

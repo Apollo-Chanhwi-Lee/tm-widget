@@ -55,6 +55,11 @@ function buildTrayMenu() {
 function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
+  // 아이콘 설정
+  const iconPath = process.platform === 'darwin' 
+    ? path.join(__dirname, '../assets/TM.icns')
+    : path.join(__dirname, '../assets/tm_icon.png')
+
   win = new BrowserWindow({
     width: 240,
     height: 130,
@@ -65,6 +70,7 @@ function createWindow() {
     alwaysOnTop: true,
     resizable: false,
     skipTaskbar: true,
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -135,6 +141,9 @@ ipcMain.handle('store-set', (_, key, val) => store.set(key, val))
 ipcMain.handle('store-delete', (_, key) => store.delete(key))
 
 app.whenReady().then(() => {
+  // 앱 이름 설정 (Dock에 표시됨)
+  app.setName('TM')
+  
   createWindow()
   createTray()
 
