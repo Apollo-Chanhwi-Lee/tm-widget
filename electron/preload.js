@@ -5,6 +5,10 @@ contextBridge.exposeInMainWorld('tmAPI', {
   setAlwaysOnTop: (val) => ipcRenderer.invoke('set-always-on-top', val),
   winMove: (dx, dy) => ipcRenderer.send('win-move', { dx, dy }),
   winHide: () => ipcRenderer.send('win-hide'),
+  
+  // 설정 모달 창 크기/위치 제어
+  setupOpen: () => ipcRenderer.send('setup-open'),
+  setupClose: () => ipcRenderer.send('setup-close'),
 
   // Store API
   storeGet: (key) => ipcRenderer.invoke('store-get', key),

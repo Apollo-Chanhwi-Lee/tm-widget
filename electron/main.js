@@ -135,6 +135,42 @@ ipcMain.on('win-move', (_, { dx, dy }) => {
 })
 ipcMain.on('win-hide', () => win.hide())
 
+// 창 크기 변경
+ipcMain.on('set-window-size', (_, { width, height }) => {
+  win.setSize(width, height)
+  win.center()
+})
+
+// SetupModal 열림/닫힘 - 창 크기 및 위치 변경
+ipcMain.on('setup-open', () => {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize
+  
+  // 원래 위치와 크기 저장
+  const [origX, origY] = win.getPosition()
+  const [origW, origH] = win.getSize()
+  store.set('_window_state', { x: origX, y: origY, width: origW, height: origH })
+  
+  // SetupModal용 크기: 720x390, 모니터 중앙
+  win.setSize(720, 390)
+  win.center()
+})
+
+ipcMain.on('setup-close', () => {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize
+  const savedState = store.get('_window_state')
+  
+  if (savedState) {
+    // 저장된 위치/크기로 복원
+    win.setSize(savedState.width, savedState.height)
+    win.setPosition(savedState.x, savedState.y)
+    store.delete('_window_state')
+  } else {
+    // 기본값: 240x130, 우측 하단
+    win.setSize(240, 130)
+    win.setPosition(width - 256, height - 146)
+  }
+})
+
 // Store IPC
 ipcMain.handle('store-get', (_, key) => store.get(key))
 ipcMain.handle('store-set', (_, key, val) => store.set(key, val))

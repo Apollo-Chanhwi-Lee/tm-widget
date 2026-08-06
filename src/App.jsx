@@ -33,6 +33,11 @@ export default function App() {
   // 드래그
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0 })
 
+  const handleCloseSetup = () => {
+    window.tmAPI?.setupClose()
+    setShowSetup(false)
+  }
+
   const onMouseDown = (e) => {
     dragRef.current = { dragging: true, startX: e.screenX, startY: e.screenY }
     window.addEventListener('mousemove', onMouseMove)
@@ -64,6 +69,7 @@ export default function App() {
     const checkSetup = async () => {
       const completed = await window.tmAPI?.storeGet('setup_completed')
       if (!completed) {
+        window.tmAPI?.setupOpen()
         setShowSetup(true)
       }
     }
@@ -91,7 +97,7 @@ export default function App() {
 
   return (
     <>
-      {showSetup && <SetupModal onClose={() => setShowSetup(false)} />}
+      {showSetup && <SetupModal onClose={handleCloseSetup} />}
       
       <div className="widget">
         {/* 헤더 */}
