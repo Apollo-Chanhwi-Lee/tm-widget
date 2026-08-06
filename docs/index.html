@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TM — Token Monitor</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0d0d0d;
+      color: #e0e0e0;
+      font-family: 'Monaco', 'Menlo', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .logo { font-size: 56px; font-weight: bold; color: #f0c040; margin-bottom: 8px; }
+    .subtitle { font-size: 14px; color: #888; margin-bottom: 6px; }
+    .services { display: flex; gap: 12px; margin-bottom: 40px; }
+    .badge {
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: bold;
+    }
+    .claude  { background: #2a2200; color: #f0c040; border: 1px solid #f0c040; }
+    .chatgpt { background: #001a0f; color: #10a37f; border: 1px solid #10a37f; }
+    .gemini  { background: #001033; color: #4285f4; border: 1px solid #4285f4; }
+
+    .version { font-size: 12px; color: #555; margin-bottom: 32px; }
+
+    .os-detected {
+      font-size: 12px; color: #f0c040;
+      margin-bottom: 20px;
+      padding: 6px 16px;
+      border: 1px solid #2a2200;
+      border-radius: 20px;
+      background: #1a1400;
+    }
+
+    .download-btns { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px; }
+    .btn {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; border-radius: 10px;
+      text-decoration: none; font-size: 13px; font-weight: bold;
+      border: 1px solid #333; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn .left { display: flex; align-items: center; gap: 10px; }
+    .btn .icon { font-size: 22px; }
+    .btn .ext { font-size: 10px; font-weight: normal; color: #888; margin-top: 2px; }
+
+    .btn-mac  { background: #1a1400; border-color: #f0c040; color: #f0c040; }
+    .btn-win  { background: #001a0f; border-color: #10a37f; color: #10a37f; }
+
+    .btn.highlight { box-shadow: 0 0 16px rgba(240,192,64,0.3); }
+    .btn-win.highlight { box-shadow: 0 0 16px rgba(16,163,127,0.3); }
+
+    .btn .tag {
+      font-size: 9px; padding: 2px 8px;
+      border-radius: 10px; font-weight: bold;
+    }
+    .btn-mac .tag { background: #f0c040; color: #0d0d0d; }
+    .btn-win .tag { background: #10a37f; color: #0d0d0d; }
+
+    .divider { width: 100%; max-width: 340px; border: none; border-top: 1px solid #1e1e1e; margin: 32px 0; }
+
+    .features { max-width: 340px; width: 100%; }
+    .features h3 { font-size: 11px; color: #555; margin-bottom: 12px; letter-spacing: 1px; }
+    .feature { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #888; margin-bottom: 8px; }
+    .feature span { color: #f0c040; }
+
+    footer { margin-top: 48px; font-size: 10px; color: #333; }
+    footer a { color: #555; text-decoration: none; }
+    footer a:hover { color: #888; }
+  </style>
+</head>
+<body>
+
+  <div class="logo">TM</div>
+  <div class="subtitle">Token Monitor</div>
+  <div class="services">
+    <span class="badge claude">Claude</span>
+    <span class="badge chatgpt">ChatGPT</span>
+    <span class="badge gemini">Gemini</span>
+  </div>
+
+  <div class="version" id="version">최신 버전 확인 중...</div>
+  <div class="os-detected" id="os-label">OS 감지 중...</div>
+
+  <div class="download-btns">
+    <a class="btn btn-mac" id="btn-mac" href="#">
+      <div class="left">
+        <span class="icon">🍎</span>
+        <div>
+          <div>macOS 다운로드</div>
+          <div class="ext">.dmg · Apple Silicon / Intel</div>
+        </div>
+      </div>
+      <span class="tag" id="tag-mac">추천</span>
+    </a>
+    <a class="btn btn-win" id="btn-win" href="#">
+      <div class="left">
+        <span class="icon">🪟</span>
+        <div>
+          <div>Windows 다운로드</div>
+          <div class="ext">.exe · Windows 10/11</div>
+        </div>
+      </div>
+      <span class="tag" id="tag-win" style="display:none">추천</span>
+    </a>
+  </div>
+
+  <hr class="divider">
+
+  <div class="features">
+    <h3>FEATURES</h3>
+    <div class="feature"><span>●</span> Claude / ChatGPT / Gemini 탭별 사용량</div>
+    <div class="feature"><span>●</span> 현재 세션 % + 주간 % 실시간 표시</div>
+    <div class="feature"><span>●</span> 맨 위 고정 ON/OFF</div>
+    <div class="feature"><span>●</span> 5초마다 자동 갱신</div>
+    <div class="feature"><span>●</span> 트레이 숨김 / 완전 종료</div>
+    <div class="feature"><span>●</span> macOS · Windows 지원</div>
+  </div>
+
+  <footer>
+    <a href="https://github.com/Apollo-Chanhwi-Lee/tm-widget">GitHub</a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/Apollo-Chanhwi-Lee/tm-widget/releases">Releases</a>
+  </footer>
+
+  <script>
+    // OS 감지
+    const ua = navigator.userAgent;
+    const isMac = /Mac/.test(ua) && !/iPhone|iPad/.test(ua);
+    const isWin = /Windows/.test(ua);
+
+    const osLabel = document.getElementById("os-label");
+    const btnMac  = document.getElementById("btn-mac");
+    const btnWin  = document.getElementById("btn-win");
+    const tagMac  = document.getElementById("tag-mac");
+    const tagWin  = document.getElementById("tag-win");
+
+    if (isMac) {
+      osLabel.textContent = "✓ macOS 감지됨";
+      btnMac.classList.add("highlight");
+      tagMac.style.display = "inline";
+      tagWin.style.display = "none";
+    } else if (isWin) {
+      osLabel.textContent = "✓ Windows 감지됨";
+      osLabel.style.borderColor = "#10a37f";
+      osLabel.style.background = "#001a0f";
+      osLabel.style.color = "#10a37f";
+      btnWin.classList.add("highlight");
+      tagWin.style.display = "inline";
+      tagMac.style.display = "none";
+    } else {
+      osLabel.textContent = "OS를 감지하지 못했습니다";
+    }
+
+    // GitHub Releases API로 최신 버전 + 다운로드 URL 가져오기
+    fetch("https://api.github.com/repos/Apollo-Chanhwi-Lee/tm-widget/releases/latest")
+      .then(r => r.json())
+      .then(data => {
+        const ver = data.tag_name || "준비 중";
+        document.getElementById("version").textContent = ver;
+
+        const assets = data.assets || [];
+        const dmg = assets.find(a => a.name.endsWith(".dmg"));
+        const exe = assets.find(a => a.name.endsWith(".exe"));
+
+        if (dmg) btnMac.href = dmg.browser_download_url;
+        else btnMac.style.opacity = "0.4";
+
+        if (exe) btnWin.href = exe.browser_download_url;
+        else btnWin.style.opacity = "0.4";
+      })
+      .catch(() => {
+        document.getElementById("version").textContent = "릴리즈 준비 중";
+        btnMac.style.opacity = "0.4";
+        btnWin.style.opacity = "0.4";
+      });
+  </script>
+</body>
+</html>
