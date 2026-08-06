@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, screen } = require('electron')
+const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, screen, shell } = require('electron')
 const path = require('path')
 const os = require('os')
 const fs = require('fs')
@@ -69,16 +69,18 @@ function createWindow() {
     transparent: false,
     alwaysOnTop: true,
     resizable: true,
-    minWidth: 240,
-    minHeight: 130,
+    minWidth: 200,
+    minHeight: 110,
     skipTaskbar: true,
     icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      // Google OAuth 팝업 완전 차단
       enableBlinkFeatures: '',
-      disableBlinkFeatures: 'Autofill',
+      disableBlinkFeatures: 'Autofill,AutofillSuggestionsFeature',
+      partition: 'persist:tm-widget',
     },
   })
 
@@ -147,31 +149,39 @@ ipcMain.on('set-window-size', (_, { width, height }) => {
 
 // SetupModal 열림/닫힘 - 창 크기 및 위치 변경
 ipcMain.on('setup-open', () => {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize
-  
   // 원래 위치와 크기 저장
   const [origX, origY] = win.getPosition()
   const [origW, origH] = win.getSize()
   store.set('_window_state', { x: origX, y: origY, width: origW, height: origH })
-  
-  // SetupModal용 크기: 720x480, 모니터 중앙
+  // SetupModal용 크기: 현재 크기의 3배 기준 720x480, 모니터 정중앙
+  win.setResizable(false)
   win.setSize(720, 480)
   win.center()
+  win.setAlwaysOnTop(true)
 })
 
 ipcMain.on('setup-close', () => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
   const savedState = store.get('_window_state')
-  
+  win.setResizable(true)
   if (savedState) {
-    // 저장된 위치/크기로 복원
     win.setSize(savedState.width, savedState.height)
     win.setPosition(savedState.x, savedState.y)
     store.delete('_window_state')
   } else {
-    // 기본값: 240x130, 우측 하단
     win.setSize(240, 130)
     win.setPosition(width - 256, height - 146)
+  }
+})
+
+// 외부 링크 열기 (Google OAuth 팝업 방지용)
+ipcMain.handle('open-external', (_, url) => {
+  const allowed = [
+    'https://platform.openai.com',
+    'https://aistudio.google.com',
+  ]
+  if (allowed.some(a => url.startsWith(a))) {
+    shell.openExternal(url)
   }
 })
 
