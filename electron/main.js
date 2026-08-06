@@ -75,6 +75,8 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      enableBlinkFeatures: '',
+      disableBlinkFeatures: 'Autofill',
     },
   })
 
@@ -150,8 +152,8 @@ ipcMain.on('setup-open', () => {
   const [origW, origH] = win.getSize()
   store.set('_window_state', { x: origX, y: origY, width: origW, height: origH })
   
-  // SetupModal용 크기: 720x390, 모니터 중앙
-  win.setSize(720, 390)
+  // SetupModal용 크기: 720x480, 모니터 중앙
+  win.setSize(720, 480)
   win.center()
 })
 

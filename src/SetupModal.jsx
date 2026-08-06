@@ -48,6 +48,8 @@ export default function SetupModal({ onClose }) {
             value={chatgptKey}
             onChange={(e) => setChatgptKey(e.target.value)}
             className="api-input"
+            autoComplete="off"
+            data-form-type="other"
           />
           <a
             href="https://platform.openai.com/api-keys"
@@ -67,6 +69,9 @@ export default function SetupModal({ onClose }) {
             value={geminiKey}
             onChange={(e) => setGeminiKey(e.target.value)}
             className="api-input"
+            autoComplete="off"
+            data-form-type="other"
+            name="gemini-api-key"
           />
           <a
             href="https://aistudio.google.com/apikey"
