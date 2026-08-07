@@ -3,6 +3,7 @@ const path = require('path')
 const os = require('os')
 const fs = require('fs')
 const Store = require('electron-store')
+const { fetchChatGPTUsage, fetchGeminiStatus } = require('./api')
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
 let win = null
@@ -189,6 +190,28 @@ ipcMain.handle('open-external', (_, url) => {
 ipcMain.handle('store-get', (_, key) => store.get(key))
 ipcMain.handle('store-set', (_, key, val) => store.set(key, val))
 ipcMain.handle('store-delete', (_, key) => store.delete(key))
+
+// ChatGPT Usage — main process에서 호출 (프록시/CORS 우회)
+ipcMain.handle('fetch-chatgpt-usage', async () => {
+  const apiKey = store.get('chatgpt_api_key')
+  if (!apiKey) return { error: 'API 키 없음' }
+  try {
+    return await fetchChatGPTUsage(apiKey)
+  } catch (err) {
+    return { error: err.message }
+  }
+})
+
+// Gemini 유효성 확인 — main process에서 호출
+ipcMain.handle('fetch-gemini-status', async () => {
+  const apiKey = store.get('gemini_api_key')
+  if (!apiKey) return { error: 'API 키 없음' }
+  try {
+    return await fetchGeminiStatus(apiKey)
+  } catch (err) {
+    return { error: err.message }
+  }
+})
 
 app.whenReady().then(() => {
   // 앱 이름 설정 (Dock에 표시됨)

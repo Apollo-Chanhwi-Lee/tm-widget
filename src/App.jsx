@@ -167,21 +167,29 @@ export default function App() {
           {tab === 'chatgpt' && chatgptUsage.error && (
             <div className="usage-empty" style={{ color: '#10a37f' }}>API 키 설정 필요</div>
           )}
-          {tab === 'gemini' && !geminiUsage.loading && !geminiUsage.error && (
-            <div style={{ fontSize: '9px', color: '#4285f4', lineHeight: '1.5' }}>
-              <div>● 오늘 {fmt(geminiUsage.today.tokens)} · {geminiUsage.today.requests}회</div>
-              <div>● 주간 {fmt(geminiUsage.week.tokens)} · {geminiUsage.week.requests}회</div>
-              <div>● 월간 {fmt(geminiUsage.month.tokens)} · {geminiUsage.month.requests}회</div>
-              <div style={{ color: '#888', marginTop: '2px' }}>
-                할당량 {geminiUsage.quota.remaining.toLocaleString()}/{geminiUsage.quota.limit.toLocaleString()}
-              </div>
-            </div>
-          )}
           {tab === 'gemini' && geminiUsage.loading && (
-            <div className="usage-empty" style={{ color: '#4285f4' }}>로딩 중...</div>
+            <div className="usage-empty" style={{ color: '#4285f4' }}>확인 중...</div>
           )}
-          {tab === 'gemini' && geminiUsage.error && (
+          {tab === 'gemini' && !geminiUsage.loading && geminiUsage.error && (
             <div className="usage-empty" style={{ color: '#4285f4' }}>API 키 설정 필요</div>
+          )}
+          {tab === 'gemini' && !geminiUsage.loading && geminiUsage.valid && (
+            <div style={{ fontSize: '9px', color: '#4285f4', lineHeight: '1.8' }}>
+              <div>● API 키 연결됨 ✓</div>
+              <div style={{ color: '#555', fontSize: '8px', marginTop: '2px' }}>
+                Google AI Studio는 공식
+              </div>
+              <div style={{ color: '#555', fontSize: '8px' }}>
+                Usage API를 지원하지 않아요
+              </div>
+              <a
+                href="#"
+                onClick={(e) => { e.preventDefault(); window.tmAPI?.openExternal(geminiUsage.dashboardUrl) }}
+                style={{ color: '#4285f4', fontSize: '8px', display: 'block', marginTop: '4px' }}
+              >
+                대시보드에서 확인 →
+              </a>
+            </div>
           )}
         </div>
 
