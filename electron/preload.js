@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('tmAPI', {
   // 창 제어
   setAlwaysOnTop: (val) => ipcRenderer.invoke('set-always-on-top', val),
   winMove: (dx, dy) => ipcRenderer.send('win-move', { dx, dy }),
+  winMoveTopRight: () => ipcRenderer.send('win-move-top-right'),
   winHide: () => ipcRenderer.send('win-hide'),
   // SetupModal
   setupOpen: () => ipcRenderer.send('setup-open'),

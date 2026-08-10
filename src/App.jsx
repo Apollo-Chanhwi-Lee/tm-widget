@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import SetupModal from './SetupModal'
 import useChatGPT from './hooks/useChatGPT'
@@ -34,6 +34,34 @@ export default function App() {
     window.tmAPI?.setupClose()
     setShowSetup(false)
   }
+
+  const openSetup = () => {
+    window.tmAPI?.setupOpen()
+    setShowSetup(true)
+  }
+
+  // 헤더 드래그 (네이티브 app-region 드래그는 macOS 더블클릭 줌과 충돌해서 JS로 직접 처리)
+  const dragOrigin = useRef(null)
+  const handleHeaderMouseDown = (e) => {
+    if (e.button !== 0 || e.target.closest('button')) return
+    dragOrigin.current = { x: e.screenX, y: e.screenY }
+  }
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!dragOrigin.current) return
+      const dx = e.screenX - dragOrigin.current.x
+      const dy = e.screenY - dragOrigin.current.y
+      dragOrigin.current = { x: e.screenX, y: e.screenY }
+      window.tmAPI?.winMove(dx, dy)
+    }
+    const handleMouseUp = () => { dragOrigin.current = null }
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
 
   // 핀 토글
   const togglePin = () => {
@@ -73,13 +101,19 @@ export default function App() {
 
   const activeTab = TABS.find(t => t.key === tab)
 
+  if (showSetup) {
+    return <SetupModal onClose={handleCloseSetup} />
+  }
+
   return (
     <>
-      {showSetup && <SetupModal onClose={handleCloseSetup} />}
-      
       <div className="widget">
         {/* 헤더 */}
-        <div className="header">
+        <div
+          className="header"
+          onMouseDown={handleHeaderMouseDown}
+          onDoubleClick={() => window.tmAPI?.winMoveTopRight()}
+        >
           <div className="header-left">
             <div className="traffic-lights">
               <button
@@ -92,14 +126,16 @@ export default function App() {
                 onClick={() => window.tmAPI?.winHide()}
                 title="최소화"
               />
-              <button
-                className={`traffic-light green ${pinned ? '' : 'inactive'}`}
-                onClick={togglePin}
-                title={pinned ? '맨 위 고정 ON' : '맨 위 고정 OFF'}
-              />
             </div>
             <span className="logo">TM</span>
           </div>
+          <button
+            className={`pin-toggle ${pinned ? 'on' : 'off'}`}
+            onClick={togglePin}
+            title={pinned ? '맨 위 고정 ON' : '맨 위 고정 OFF'}
+          >
+            📌 {pinned ? 'ON' : 'OFF'}
+          </button>
         </div>
 
         <div className="divider" />
@@ -165,13 +201,13 @@ export default function App() {
             <div className="usage-empty" style={{ color: '#10a37f' }}>로딩 중...</div>
           )}
           {tab === 'chatgpt' && chatgptUsage.error && (
-            <div className="usage-empty" style={{ color: '#10a37f' }}>API 키 설정 필요</div>
+            <div className="usage-empty clickable" style={{ color: '#10a37f' }} onClick={openSetup}>API 키 설정 필요</div>
           )}
           {tab === 'gemini' && geminiUsage.loading && (
             <div className="usage-empty" style={{ color: '#4285f4' }}>확인 중...</div>
           )}
           {tab === 'gemini' && !geminiUsage.loading && geminiUsage.error && (
-            <div className="usage-empty" style={{ color: '#4285f4' }}>API 키 설정 필요</div>
+            <div className="usage-empty clickable" style={{ color: '#4285f4' }} onClick={openSetup}>API 키 설정 필요</div>
           )}
           {tab === 'gemini' && !geminiUsage.loading && geminiUsage.valid && (
             <div style={{ fontSize: '9px', color: '#4285f4', lineHeight: '1.8' }}>

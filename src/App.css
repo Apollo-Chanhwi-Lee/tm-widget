@@ -13,7 +13,6 @@
   align-items: center;
   justify-content: space-between;
   cursor: grab;
-  -webkit-app-region: drag;
   user-select: none;
 }
 .header:active { cursor: grabbing; }
@@ -27,7 +26,6 @@
 .traffic-lights {
   display: flex;
   gap: 6px;
-  -webkit-app-region: no-drag;
 }
 
 .traffic-light {
@@ -43,33 +41,27 @@
 .traffic-light:hover { opacity: 0.8; }
 .traffic-light.red { background: #ff5f56; }
 .traffic-light.yellow { background: #ffbd2e; }
-.traffic-light.green { background: #27c93f; }
 
-/* 초록 버튼 - 핀 ON/OFF */
-.traffic-light.green.inactive {
-  background: #27c93f;
-  position: relative;
-}
-.traffic-light.green.inactive::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(255, 189, 46, 0.85);
-  border-radius: 50%;
-  z-index: 1;
-}
-.traffic-light.green.inactive::after {
-  content: '⊘';
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  color: rgba(0,0,0,0.7);
-  font-size: 9px;
-  line-height: 1;
-  z-index: 2;
+/* 맨 위 고정 ON/OFF */
+.pin-toggle {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 8px;
   font-weight: bold;
+  font-family: 'Monaco', monospace;
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: none;
+  background: #1a1a1a;
+  color: #666;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  transition: all 0.15s;
 }
+.pin-toggle:hover { opacity: 0.8; }
+.pin-toggle.on { color: #27c93f; }
+.pin-toggle.off { color: #666; }
 
 .logo {
   font-size: 13px;
@@ -127,10 +119,12 @@
 
 .usage-row { font-size: 9px; }
 .usage-empty { font-size: 9px; color: #444; }
+.usage-empty.clickable { cursor: pointer; text-decoration: underline; }
+.usage-empty.clickable:hover { opacity: 0.8; }
 
 /* 하단 */
 .footer {
   font-size: 8px;
-  color: #333;
+  color: #eee;
   text-align: right;
 }

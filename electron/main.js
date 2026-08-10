@@ -65,14 +65,14 @@ function createWindow() {
     width: 240,
     height: 130,
     x: width - 256,
-    y: height - 146,
+    y: 16,
     frame: false,
     transparent: false,
     alwaysOnTop: true,
-    resizable: true,
+    resizable: false,
+    maximizable: false,
     minWidth: 200,
     minHeight: 110,
-    skipTaskbar: true,
     icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -84,6 +84,11 @@ function createWindow() {
       partition: 'persist:tm-widget',
     },
   })
+
+  // alwaysOnTop 옵션만으로는 다른 Space나 전체화면 앱 위로 뜨지 않음 -
+  // 창 레벨을 screen-saver로 올리고 모든 워크스페이스/전체화면에서 보이도록 설정
+  win.setAlwaysOnTop(true, 'screen-saver')
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
 
   if (isDev) {
     win.loadURL('http://localhost:5173')
@@ -99,15 +104,23 @@ function createWindow() {
 }
 
 function createTray() {
-  const iconPath = path.join(__dirname, '../assets/tm_icon.png')
+  const iconPath = path.join(__dirname, '../assets/tray_icon.png')
   let icon
   try {
     icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
   } catch {
     icon = nativeImage.createEmpty()
   }
+  console.log('[TM DEBUG] iconPath=', iconPath, 'exists=', fs.existsSync(iconPath), 'isEmpty=', icon.isEmpty(), 'size=', icon.getSize())
+  try { fs.writeFileSync('/tmp/tm_tray_debug.png', icon.toPNG()) } catch (e) { console.log('[TM DEBUG] write fail', e.message) }
 
   tray = new Tray(icon)
+  console.log('[TM DEBUG] tray created, isDestroyed=', tray.isDestroyed(), 'bounds=', tray.getBounds())
+  setTimeout(() => {
+    console.log('[TM DEBUG +2s] isDestroyed=', tray.isDestroyed(), 'bounds=', tray.getBounds())
+    const d = screen.getPrimaryDisplay()
+    console.log('[TM DEBUG display] bounds=', d.bounds, 'workArea=', d.workArea, 'scaleFactor=', d.scaleFactor)
+  }, 2000)
   tray.setToolTip(buildTrayTooltip())
 
   // 맥: 클릭 → 창 토글 / 우클릭 → 메뉴
@@ -135,10 +148,17 @@ function createTray() {
 
 // IPC: 기존 + store 추가
 ipcMain.handle('get-plan-usage', async () => readPlanUsage())
-ipcMain.handle('set-always-on-top', (_, val) => win.setAlwaysOnTop(val))
+ipcMain.handle('set-always-on-top', (_, val) => {
+  win.setAlwaysOnTop(val, val ? 'screen-saver' : 'normal')
+  win.setVisibleOnAllWorkspaces(val, { visibleOnFullScreen: true })
+})
 ipcMain.on('win-move', (_, { dx, dy }) => {
   const [x, y] = win.getPosition()
   win.setPosition(x + dx, y + dy)
+})
+ipcMain.on('win-move-top-right', () => {
+  const { width } = screen.getPrimaryDisplay().workAreaSize
+  win.setPosition(width - 256, 16)
 })
 ipcMain.on('win-hide', () => win.hide())
 
@@ -162,17 +182,13 @@ ipcMain.on('setup-open', () => {
 })
 
 ipcMain.on('setup-close', () => {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize
-  const savedState = store.get('_window_state')
-  win.setResizable(true)
-  if (savedState) {
-    win.setSize(savedState.width, savedState.height)
-    win.setPosition(savedState.x, savedState.y)
-    store.delete('_window_state')
-  } else {
-    win.setSize(240, 130)
-    win.setPosition(width - 256, height - 146)
-  }
+  const { width } = screen.getPrimaryDisplay().workAreaSize
+  store.delete('_window_state')
+  win.setResizable(false)
+  win.setSize(240, 130)
+  win.setPosition(width - 256, 16)
+  win.setAlwaysOnTop(true, 'screen-saver')
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
 })
 
 // 외부 링크 열기 (Google OAuth 팝업 방지용)
@@ -222,9 +238,17 @@ app.whenReady().then(() => {
 
   if (process.platform === 'darwin') {
     app.setLoginItemSettings({ openAtLogin: true, openAsHidden: true })
-    // 맥: 독 아이콘 숨기기 (메뉴바 앱처럼)
-    app.dock.hide()
+    // 카카오톡처럼 Dock 아이콘 + 메뉴바 트레이 아이콘을 동시에 표시
+    app.dock.setIcon(path.join(__dirname, '../assets/tm_icon_1024.png'))
   }
 })
 
 app.on('window-all-closed', (e) => e.preventDefault())
+
+// Dock 아이콘 클릭 시 창이 숨겨져 있으면 다시 표시
+app.on('activate', () => {
+  if (win) {
+    win.show()
+    win.focus()
+  }
+})

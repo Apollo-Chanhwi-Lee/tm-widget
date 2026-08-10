@@ -2,7 +2,7 @@
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.0);
+  background: #0d0d0d;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -47,7 +47,6 @@
 .m-light:hover { opacity: 0.75; }
 .m-light.red    { background: #ff5f56; }
 .m-light.yellow { background: #ffbd2e; }
-.m-light.green  { background: #27c93f; cursor: default; }
 
 .modal-title {
   font-size: 13px;
@@ -142,15 +141,30 @@
   box-shadow: 0 0 0 2px rgba(240, 192, 64, 0.15);
 }
 
+.link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+
 .help-link {
   display: inline-block;
-  margin-top: 5px;
   font-size: 10px;
   color: #555;
   text-decoration: none;
   cursor: pointer;
 }
 .help-link:hover { color: #f0c040; }
+
+.delete-link {
+  display: inline-block;
+  font-size: 10px;
+  color: #663333;
+  text-decoration: none;
+  cursor: pointer;
+}
+.delete-link:hover { color: #ff4444; }
 
 .error-msg {
   font-size: 10px;
