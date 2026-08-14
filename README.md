@@ -80,7 +80,7 @@ git push origin v1.0.0
 
 | | |
 |---|---|
-| **Electron 32** | Cross-platform desktop framework |
+| **Electron 43** | Cross-platform desktop framework |
 | **React 18** | UI framework |
 | **Vite 5** | Build tool |
 | **electron-store** | Config & API key storage |
