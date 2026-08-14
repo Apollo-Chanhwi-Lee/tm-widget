@@ -3,11 +3,13 @@ const { contextBridge, ipcRenderer } = require('electron')
 contextBridge.exposeInMainWorld('tmAPI', {
   // Claude
   getPlanUsage: () => ipcRenderer.invoke('get-plan-usage'),
+  onRefreshPlanUsage: (cb) => ipcRenderer.on('refresh-plan-usage', cb),
   // 창 제어
   setAlwaysOnTop: (val) => ipcRenderer.invoke('set-always-on-top', val),
   winMove: (dx, dy) => ipcRenderer.send('win-move', { dx, dy }),
   winMoveTopRight: () => ipcRenderer.send('win-move-top-right'),
   winHide: () => ipcRenderer.send('win-hide'),
+  quitApp: () => ipcRenderer.send('quit-app'),
   // SetupModal
   setupOpen: () => ipcRenderer.send('setup-open'),
   setupClose: () => ipcRenderer.send('setup-close'),

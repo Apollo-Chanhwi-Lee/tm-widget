@@ -8,6 +8,7 @@ const { fetchChatGPTUsage, fetchGeminiStatus } = require('./api')
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
 let win = null
 let tray = null
+let isQuitting = false
 
 // electron-store: API 키 저장소
 const store = new Store()
@@ -19,6 +20,23 @@ const PLAN_USAGE_PATH = {
   linux:  path.join(os.homedir(), '.config/Claude/plan-usage-history.json'),
 }[process.platform] || ''
 
+// fh = 세션(5시간 롤링 윈도우, 하루에도 여러 번 0으로 리셋됨)
+// sd = 주간(7일 주기로만 리셋됨) — 실측 데이터 기준, 필드명과 실제 의미가 반대임
+const FIVE_HOURS_MS = 5 * 60 * 60 * 1000
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
+const RESET_DROP_THRESHOLD = 5 // 이전 값보다 이만큼 이상 떨어지면 리셋으로 간주
+
+// samples를 뒤에서부터 훑어서 가장 최근 리셋(값이 뚝 떨어진) 시점을 찾는다.
+// 못 찾으면(수집 기간 내내 한 번도 리셋 안 됨) 가장 오래된 샘플 시각을 윈도우 시작으로 간주.
+function findWindowStart(samples, field) {
+  for (let i = samples.length - 1; i > 0; i--) {
+    const cur = samples[i].u[field] ?? 0
+    const prev = samples[i - 1].u[field] ?? 0
+    if (cur < prev - RESET_DROP_THRESHOLD) return samples[i].t
+  }
+  return samples[0].t
+}
+
 function readPlanUsage() {
   try {
     const raw = fs.readFileSync(PLAN_USAGE_PATH, 'utf8')
@@ -26,19 +44,27 @@ function readPlanUsage() {
     const samples = data.samples || []
     if (!samples.length) return null
     const latest = samples[samples.length - 1]
-    return { fh: latest.u.fh || 0, sd: latest.u.sd || 0 }
+    const fhStart = findWindowStart(samples, 'fh')
+    const sdStart = findWindowStart(samples, 'sd')
+    return {
+      fh: latest.u.fh || 0,
+      sd: latest.u.sd || 0,
+      fhResetAt: fhStart + FIVE_HOURS_MS,
+      sdResetAt: sdStart + SEVEN_DAYS_MS,
+      lastUpdated: latest.t,
+    }
   } catch { return null }
 }
 
 function buildTrayTooltip() {
   const u = readPlanUsage()
-  const claude = u ? `Claude 세션 ${u.sd}% | 주간 ${u.fh}%` : 'Claude --'
+  const claude = u ? `Claude 세션 ${u.fh}% | 주간 ${u.sd}%` : 'Claude --'
   return `TM — Token Monitor\n${claude}\nChatGPT --\nGemini --`
 }
 
 function buildTrayMenu() {
   const u = readPlanUsage()
-  const claudeLabel = u ? `Claude  세션 ${u.sd}% · 주간 ${u.fh}%` : 'Claude  --'
+  const claudeLabel = u ? `Claude  세션 ${u.fh}% · 주간 ${u.sd}%` : 'Claude  --'
 
   return Menu.buildFromTemplate([
     { label: 'Token Monitor', enabled: false },
@@ -63,7 +89,7 @@ function createWindow() {
 
   win = new BrowserWindow({
     width: 240,
-    height: 130,
+    height: 110,
     x: width - 256,
     y: 16,
     frame: false,
@@ -72,7 +98,7 @@ function createWindow() {
     resizable: false,
     maximizable: false,
     minWidth: 200,
-    minHeight: 110,
+    minHeight: 90,
     icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -96,10 +122,17 @@ function createWindow() {
     win.loadFile(path.join(__dirname, '../dist/index.html'))
   }
 
-  // 닫기 → 숨기기
+  // 닫기 → 숨기기 (단, Cmd+Q/Dock 종료로 실제 종료하는 중이면 그대로 닫음)
   win.on('close', (e) => {
+    if (isQuitting) return
     e.preventDefault()
     win.hide()
+  })
+
+  // 숨겨뒀다가 트레이/Dock으로 다시 열었을 때 렌더러가 마운트 시점의 낡은
+  // planUsage를 계속 보여주던 문제 — show될 때마다 즉시 재조회하도록 알림
+  win.on('show', () => {
+    win.webContents.send('refresh-plan-usage')
   })
 }
 
@@ -108,19 +141,14 @@ function createTray() {
   let icon
   try {
     icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
+    // 검정 아이콘 + 다크 메뉴바 조합이면 안 보이는 문제 - 템플릿 이미지로 지정해서
+    // macOS가 라이트/다크 메뉴바에 맞게 알아서 반전 렌더링하도록 함
+    icon.setTemplateImage(true)
   } catch {
     icon = nativeImage.createEmpty()
   }
-  console.log('[TM DEBUG] iconPath=', iconPath, 'exists=', fs.existsSync(iconPath), 'isEmpty=', icon.isEmpty(), 'size=', icon.getSize())
-  try { fs.writeFileSync('/tmp/tm_tray_debug.png', icon.toPNG()) } catch (e) { console.log('[TM DEBUG] write fail', e.message) }
 
   tray = new Tray(icon)
-  console.log('[TM DEBUG] tray created, isDestroyed=', tray.isDestroyed(), 'bounds=', tray.getBounds())
-  setTimeout(() => {
-    console.log('[TM DEBUG +2s] isDestroyed=', tray.isDestroyed(), 'bounds=', tray.getBounds())
-    const d = screen.getPrimaryDisplay()
-    console.log('[TM DEBUG display] bounds=', d.bounds, 'workArea=', d.workArea, 'scaleFactor=', d.scaleFactor)
-  }, 2000)
   tray.setToolTip(buildTrayTooltip())
 
   // 맥: 클릭 → 창 토글 / 우클릭 → 메뉴
@@ -161,6 +189,7 @@ ipcMain.on('win-move-top-right', () => {
   win.setPosition(width - 256, 16)
 })
 ipcMain.on('win-hide', () => win.hide())
+ipcMain.on('quit-app', () => app.quit())
 
 // 창 크기 변경
 ipcMain.on('set-window-size', (_, { width, height }) => {
@@ -185,7 +214,7 @@ ipcMain.on('setup-close', () => {
   const { width } = screen.getPrimaryDisplay().workAreaSize
   store.delete('_window_state')
   win.setResizable(false)
-  win.setSize(240, 130)
+  win.setSize(240, 110)
   win.setPosition(width - 256, 16)
   win.setAlwaysOnTop(true, 'screen-saver')
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
@@ -243,6 +272,7 @@ app.whenReady().then(() => {
   }
 })
 
+app.on('before-quit', () => { isQuitting = true })
 app.on('window-all-closed', (e) => e.preventDefault())
 
 // Dock 아이콘 클릭 시 창이 숨겨져 있으면 다시 표시

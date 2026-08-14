@@ -17,6 +17,31 @@ function fmt(n) {
   return String(Math.floor(n))
 }
 
+// 세션(5시간) 초기화까지 남은 시간: HH:MM:SS
+function fmtResetHMS(resetAt, now) {
+  if (!resetAt) return '--:--:--'
+  const remain = Math.max(0, resetAt - now)
+  const totalSec = Math.floor(remain / 1000)
+  const h = Math.floor(totalSec / 3600)
+  const m = Math.floor((totalSec % 3600) / 60)
+  const s = totalSec % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
+// 주간 초기화까지 남은 시간: D일 H시간 M분
+function fmtResetDHM(resetAt, now) {
+  if (!resetAt) return '--일 --시간 --분'
+  const remain = Math.max(0, resetAt - now)
+  const totalMin = Math.floor(remain / 60000)
+  const d = Math.floor(totalMin / 1440)
+  const h = Math.floor((totalMin % 1440) / 60)
+  const m = totalMin % 60
+  return `${d}일 ${h}시간 ${m}분`
+}
+
+// Claude 앱이 꺼져있으면 plan-usage-history.json 갱신이 멈춤 - 마지막 샘플이 오래됐으면 알려줌
+const STALE_MS = 30 * 60 * 1000
+
 export default function App() {
   const [tab, setTab] = useState('claude')
   const [pinned, setPinned] = useState(true)
@@ -89,7 +114,9 @@ export default function App() {
       if (data) setPlanUsage(data)
     }
     load()
-    const id = setInterval(load, 30 * 60 * 1000)  // 30분마다
+    const id = setInterval(load, 3 * 60 * 1000)  // 3분마다 (리셋 카운트다운 경계 오차 줄이기 위해 5분→3분)
+    // 숨겼다가 트레이/Dock으로 다시 열 때도 즉시 갱신 (마운트는 앱 프로세스당 한 번뿐이라 폴링만으론 안 됨)
+    window.tmAPI?.onRefreshPlanUsage(load)
     return () => clearInterval(id)
   }, [])
 
@@ -118,13 +145,13 @@ export default function App() {
             <div className="traffic-lights">
               <button
                 className="traffic-light red"
-                onClick={() => window.tmAPI?.winHide()}
-                title="창 숨기기"
+                onClick={() => window.tmAPI?.quitApp()}
+                title="완전 종료"
               />
               <button
                 className="traffic-light yellow"
                 onClick={() => window.tmAPI?.winHide()}
-                title="최소화"
+                title="숨기기 (Dock/Spotlight에서 TM 다시 열면 복귀)"
               />
             </div>
             <span className="logo">TM</span>
@@ -139,32 +166,6 @@ export default function App() {
         </div>
 
         <div className="divider" />
-
-        {/* 현재 세션 바 */}
-        <div className="session-row">
-          {planUsage ? (
-            <>
-              <div className="session-label">
-                <span style={{ color: '#f0c040' }}>● 세션 {planUsage.sd}%</span>
-                <span style={{ color: '#555', margin: '0 4px' }}>|</span>
-                <span style={{ color: '#888' }}>주간 {planUsage.fh}%</span>
-              </div>
-              <div className="progress-bg">
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${Math.min(planUsage.sd, 100)}%`,
-                    background: planUsage.sd > 85 ? '#ff4444' : planUsage.sd > 60 ? '#ffaa00' : '#f0c040'
-                  }}
-                />
-              </div>
-            </>
-          ) : (
-            <div className="session-label" style={{ color: '#444' }}>Claude 앱 감지 중...</div>
-          )}
-        </div>
-
-        <div className="divider-thin" />
 
         {/* 탭 */}
         <div className="tabs">
@@ -183,8 +184,14 @@ export default function App() {
         {/* 사용량 컨텐츠 */}
         <div className="content">
           {tab === 'claude' && planUsage && (
-            <div className="usage-row" style={{ color: '#f0c040' }}>
-              <span>● 세션 {planUsage.sd}% · 주간 {planUsage.fh}%</span>
+            <div
+              className="usage-row"
+              style={{ color: '#f0c040', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '6px' }}
+            >
+              <span>● 세션 {planUsage.fh}% · 주간 {planUsage.sd}%</span>
+              {time.getTime() - planUsage.lastUpdated > STALE_MS && (
+                <span style={{ color: '#666', fontSize: '8px', whiteSpace: 'nowrap' }}>Claude 앱을 켜주세요</span>
+              )}
             </div>
           )}
           {tab === 'claude' && !planUsage && (
@@ -229,9 +236,17 @@ export default function App() {
           )}
         </div>
 
-        {/* 하단 시간 */}
+        {/* 하단: 초기화 카운트다운(좌) + 시계(우) */}
         <div className="footer">
-          {time.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          {planUsage && (
+            <div className="reset-countdown">
+              <div>세션 초기화까지 {fmtResetHMS(planUsage.fhResetAt, time.getTime())}</div>
+              <div>주간 초기화까지 {fmtResetDHM(planUsage.sdResetAt, time.getTime())}</div>
+            </div>
+          )}
+          <span className="clock">
+            {time.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          </span>
         </div>
       </div>
     </>

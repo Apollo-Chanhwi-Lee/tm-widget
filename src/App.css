@@ -72,23 +72,6 @@
 
 /* 구분선 */
 .divider { height: 1px; background: #2a2a2a; margin: 2px 0; }
-.divider-thin { height: 1px; background: #1e1e1e; }
-
-/* 세션 바 */
-.session-row { display: flex; flex-direction: column; gap: 2px; }
-.session-label { font-size: 9px; font-weight: bold; }
-
-.progress-bg {
-  height: 4px;
-  background: #1a1a1a;
-  border-radius: 2px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.5s ease;
-}
 
 /* 탭 */
 .tabs {
@@ -111,10 +94,9 @@
 
 /* 컨텐츠 */
 .content {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  margin: 4px 0;
 }
 
 .usage-row { font-size: 9px; }
@@ -122,9 +104,22 @@
 .usage-empty.clickable { cursor: pointer; text-decoration: underline; }
 .usage-empty.clickable:hover { opacity: 0.8; }
 
-/* 하단 */
+/* 하단: 초기화 카운트다운(좌) + 시계(우) */
 .footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.reset-countdown {
+  color: #888;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.clock {
   font-size: 8px;
   color: #eee;
-  text-align: right;
+  white-space: nowrap;
 }
