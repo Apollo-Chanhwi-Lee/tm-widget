@@ -1,7 +1,7 @@
 {
   "name": "tm-widget",
-  "version": "1.1.0",
-  "description": "Token Monitor — Claude, ChatGPT, Gemini 사용량 위젯",
+  "version": "1.1.1",
+  "description": "Token Monitor \u2014 Claude, ChatGPT, Gemini \uc0ac\uc6a9\ub7c9 \uc704\uc82f",
   "main": "electron/main.js",
   "homepage": "https://apollo-chanhwi-lee.github.io/tm-widget",
   "author": "Apollo-Chanhwi-Lee",
