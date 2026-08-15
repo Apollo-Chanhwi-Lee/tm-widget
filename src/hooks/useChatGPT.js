@@ -39,8 +39,8 @@ export default function useChatGPT() {
     }
 
     fetchUsage()
-    // 30분마다 갱신
-    const id = setInterval(fetchUsage, 30 * 60 * 1000)
+    // 1분마다 갱신 (Claude/Gemini와 동일 주기 - 키 없으면 main process에서 네트워크 호출 없이 즉시 반환됨)
+    const id = setInterval(fetchUsage, 60 * 1000)
     return () => { mounted = false; clearInterval(id) }
   }, [])
 

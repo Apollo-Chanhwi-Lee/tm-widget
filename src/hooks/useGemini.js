@@ -40,8 +40,8 @@ export default function useGemini() {
     }
 
     checkKey()
-    // 1시간마다 재확인 (키 유효성)
-    const id = setInterval(checkKey, 60 * 60 * 1000)
+    // 1분마다 재확인 (Claude/ChatGPT와 동일 주기 - 키 없으면 main process에서 네트워크 호출 없이 즉시 반환됨)
+    const id = setInterval(checkKey, 60 * 1000)
     return () => { mounted = false; clearInterval(id) }
   }, [])
 

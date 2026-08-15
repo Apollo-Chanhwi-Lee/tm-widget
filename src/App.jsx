@@ -114,7 +114,7 @@ export default function App() {
       if (data) setPlanUsage(data)
     }
     load()
-    const id = setInterval(load, 3 * 60 * 1000)  // 3분마다 (리셋 카운트다운 경계 오차 줄이기 위해 5분→3분)
+    const id = setInterval(load, 60 * 1000)  // 1분마다
     // 숨겼다가 트레이/Dock으로 다시 열 때도 즉시 갱신 (마운트는 앱 프로세스당 한 번뿐이라 폴링만으론 안 됨)
     window.tmAPI?.onRefreshPlanUsage(load)
     return () => clearInterval(id)
