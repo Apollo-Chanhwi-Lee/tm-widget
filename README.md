@@ -58,7 +58,7 @@ This app isn't signed with a paid developer certificate. The OS warning on first
 
 ### UI
 - 탭별 서비스 전환 / Switch between services via tabs
-- 맨 위 고정 ON/OFF (📌on & off) / Always-on-top toggle
+- 맨 위 고정 ON/OFF 토글 (📌 ON / 📌 OFF) / Always-on-top toggle
 - 드래그로 위치 이동 / Drag to reposition
 - 트레이 아이콘 우클릭 메뉴 / System tray icon with right-click menu
 - 완전 종료 옵션 / Full quit option
