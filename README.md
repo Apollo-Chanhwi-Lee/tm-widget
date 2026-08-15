@@ -17,6 +17,21 @@
 | macOS | `.dmg` (Apple Silicon + Intel) |
 | Windows | `.exe` (NSIS Installer) |
 
+### ⚠️ 설치 시 경고가 뜨나요? / Seeing a security warning?
+
+이 앱은 유료 개발자 인증서로 서명되어 있지 않습니다 (Apple/Microsoft 인증서는 연 단위 비용이 듭니다). 그래서 처음 실행할 때 OS가 경고를 띄우는 게 정상입니다 — 바이러스가 아닙니다.
+This app isn't signed with a paid developer certificate. The OS warning on first launch is expected — it is not a virus.
+
+**macOS**
+1. `.dmg`를 열고 `TM.app`을 `Applications` 폴더로 드래그
+2. Finder에서 `TM.app`을 **우클릭 → 열기(Open)** → 뜨는 창에서 다시 **열기(Open)** 클릭
+   (Dock에서 더블클릭하면 "손상되었음" 문구가 뜰 수 있으니 반드시 우클릭으로 여세요)
+3. 그래도 안 열리면 터미널에서: `xattr -cr /Applications/TM.app`
+
+**Windows**
+1. `TM Setup x.x.x.exe` 실행 시 "Windows에서 PC를 보호했습니다" 창이 뜨면
+2. **추가 정보(More info)** 클릭 → **실행(Run anyway)** 클릭
+
 ---
 
 ## 기능 / Features

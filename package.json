@@ -1,6 +1,6 @@
 {
   "name": "tm-widget",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Token Monitor \u2014 Claude, ChatGPT, Gemini \uc0ac\uc6a9\ub7c9 \uc704\uc82f",
   "main": "electron/main.js",
   "homepage": "https://apollo-chanhwi-lee.github.io/tm-widget",
@@ -39,6 +39,7 @@
     ],
     "mac": {
       "icon": "assets/TM.icns",
+      "identity": null,
       "target": [
         {
           "target": "dmg",
@@ -50,6 +51,7 @@
       ],
       "category": "public.app-category.utilities"
     },
+    "afterSign": "scripts/afterSign.js",
     "win": {
       "icon": "assets/tm_icon.png",
       "target": [

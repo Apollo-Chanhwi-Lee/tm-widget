@@ -36,6 +36,8 @@ jobs:
       - name: Build macOS DMG
         if: matrix.os == 'macos-latest'
         run: npm run build:mac -- --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
 
       - name: Build Windows EXE
         if: matrix.os == 'windows-latest'

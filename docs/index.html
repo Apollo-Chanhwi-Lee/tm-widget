@@ -73,6 +73,20 @@
     .footer a:hover { text-decoration: underline; }
 
     .loading { font-size: 12px; color: #888; }
+
+    .warning-note {
+      margin-top: 28px;
+      max-width: 340px;
+      font-size: 11px;
+      line-height: 1.6;
+      color: #999;
+      text-align: center;
+      padding: 12px 16px;
+      border: 1px solid #2a2200;
+      border-radius: 10px;
+      background: #1a1400;
+    }
+    .warning-note b { color: #f0c040; }
   </style>
 </head>
 <body>
@@ -89,6 +103,13 @@
 
   <div class="download-btns" id="download-btns">
     <div class="loading">다운로드 링크 가져오는 중...</div>
+  </div>
+
+  <div class="warning-note">
+    ⚠️ 실행 시 "확인되지 않은 개발자" 또는 "PC 보호" 경고가 뜰 수 있어요.<br>
+    개발자 인증서(유료)가 없어서 뜨는 정상적인 경고입니다 — 바이러스가 아닙니다.<br><br>
+    <b>macOS</b>: 앱을 <b>우클릭 → 열기</b>로 실행하세요 (더블클릭 금지)<br>
+    <b>Windows</b>: "추가 정보" → "실행" 클릭
   </div>
 
   <div class="footer">
