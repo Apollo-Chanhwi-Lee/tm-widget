@@ -6,6 +6,11 @@ const Store = require('electron-store')
 const { fetchChatGPTUsage, fetchGeminiStatus } = require('./api')
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
+
+// 240x110 트레이 위젯일 뿐 GPU 합성이 전혀 필요 없어서 GPU 프로세스를 통째로 끔
+// (헬퍼 프로세스 3개 중 1개 제거). V8 힙도 이 앱 데이터량에 비해 과할 필요가 없어 캡을 둠.
+app.disableHardwareAcceleration()
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=128')
 let win = null
 let tray = null
 let isQuitting = false
@@ -108,6 +113,9 @@ function createWindow() {
       enableBlinkFeatures: '',
       disableBlinkFeatures: 'Autofill,AutofillSuggestionsFeature',
       partition: 'persist:tm-widget',
+      // 입력 필드가 API 키 하나뿐이라 스펠체크 사전 로딩이 불필요한 메모리 낭비
+      spellcheck: false,
+      backgroundThrottling: true,
     },
   })
 
